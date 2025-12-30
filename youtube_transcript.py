@@ -138,18 +138,20 @@ def parse_timedtext_xml(xml_content: str) -> list[TranscriptSegment]:
 
     segments = []
 
-    # Format 3: <p t="ms" d="ms"><s>word</s>...</p>
+    # Format 3: <p t="ms" d="ms">text or <s>word</s>...</p>
     for p_elem in root.findall(".//p"):
         start_ms = int(p_elem.get("t", 0))
         dur_ms = int(p_elem.get("d", 0))
 
-        # Collect text from <s> children
-        words = []
-        for s_elem in p_elem.findall("s"):
-            text = s_elem.text or ""
-            words.append(text)
+        # Try to collect text from <s> children first
+        s_elements = p_elem.findall("s")
+        if s_elements:
+            words = [s_elem.text or "" for s_elem in s_elements]
+            line_text = "".join(words).strip()
+        else:
+            # No <s> elements - get direct text content
+            line_text = "".join(p_elem.itertext()).strip()
 
-        line_text = "".join(words).strip()
         if line_text:
             segments.append(
                 TranscriptSegment(

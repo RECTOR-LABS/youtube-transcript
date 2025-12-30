@@ -1,52 +1,47 @@
-# YouTube Transcript
+# ytranscript
 
-Fetch YouTube video transcripts using YouTube's internal Innertube API (Android client impersonation). No API key required.
+Fetch YouTube video transcripts via Innertube API. **Zero API key required.**
 
-## Features
+## Quick Start (npx)
 
-- Fetches transcripts via Innertube API (no authentication needed)
-- Multiple output formats: text, JSON, SRT
-- Works as CLI tool and Python module
-- Multi-language support
-- No Selenium/browser automation required
+```bash
+# No install needed!
+npx ytranscript VIDEO_ID
+
+# Or with full URL
+npx ytranscript https://www.youtube.com/watch?v=dQw4w9WgXcQ
+```
 
 ## Installation
 
 ```bash
-# Clone the repo
-git clone https://github.com/RECTOR-LABS/youtube-transcript.git
-cd youtube-transcript
+# Global install
+npm install -g ytranscript
 
-# Install dependencies
-pip install requests
-
-# Make executable (optional)
-chmod +x youtube_transcript.py
+# Then use directly
+ytranscript VIDEO_ID
 ```
 
 ## CLI Usage
 
 ```bash
 # Basic usage (text with timestamps)
-./youtube_transcript.py https://www.youtube.com/watch?v=VIDEO_ID
-
-# Using video ID directly
-./youtube_transcript.py VIDEO_ID
+ytranscript VIDEO_ID
 
 # JSON format
-./youtube_transcript.py VIDEO_ID --format json
+ytranscript VIDEO_ID --format json
 
 # SRT subtitles (save to file)
-./youtube_transcript.py VIDEO_ID --format srt -o subtitles.srt
+ytranscript VIDEO_ID --format srt -o subtitles.srt
 
 # Plain text without timestamps
-./youtube_transcript.py VIDEO_ID --no-timestamps
+ytranscript VIDEO_ID --no-timestamps
 
 # List available languages
-./youtube_transcript.py VIDEO_ID --list-languages
+ytranscript VIDEO_ID --list-languages
 
 # Fetch specific language
-./youtube_transcript.py VIDEO_ID --lang es
+ytranscript VIDEO_ID --lang es
 ```
 
 ### Output Formats
@@ -57,32 +52,42 @@ chmod +x youtube_transcript.py
 | `json` | Structured JSON with start, duration, text |
 | `srt`  | SubRip subtitle format |
 
-## Python Module Usage
+## Programmatic Usage
 
-```python
-from youtube_transcript import get_transcript, list_languages
+```typescript
+import { getTranscript, listLanguages } from "ytranscript";
 
-# Get transcript
-transcript = get_transcript("VIDEO_ID")
-for segment in transcript:
-    print(f"[{segment.start:.1f}s] {segment.text}")
+// Get transcript
+const transcript = await getTranscript("VIDEO_ID");
+for (const segment of transcript) {
+  console.log(`[${segment.start.toFixed(1)}s] ${segment.text}`);
+}
 
-# List available languages
-languages = list_languages("VIDEO_ID")
-for lang in languages:
-    print(f"{lang['code']}: {lang['name']} (auto: {lang['is_auto']})")
+// List available languages
+const languages = await listLanguages("VIDEO_ID");
+for (const lang of languages) {
+  console.log(`${lang.code}: ${lang.name} (auto: ${lang.isAuto})`);
+}
 
-# Get transcript in specific language
-transcript = get_transcript("VIDEO_ID", language="es")
+// Get transcript in specific language
+const spanishTranscript = await getTranscript("VIDEO_ID", "es");
 ```
 
-### TranscriptSegment Properties
+### Types
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `start` | float | Start time in seconds |
-| `duration` | float | Duration in seconds |
-| `text` | str | Transcript text |
+```typescript
+interface TranscriptSegment {
+  start: number;    // Start time in seconds
+  duration: number; // Duration in seconds
+  text: string;     // Transcript text
+}
+
+interface LanguageInfo {
+  code: string;     // Language code (e.g., "en", "es")
+  name: string;     // Language name
+  isAuto: boolean;  // Whether auto-generated
+}
+```
 
 ## How It Works
 
@@ -91,7 +96,11 @@ transcript = get_transcript("VIDEO_ID", language="es")
 3. **Fetch timedtext XML** from caption URL
 4. **Parse XML** into structured segments
 
-This approach uses YouTube's internal API that serves the web/mobile clients, bypassing the need for official API keys.
+Uses YouTube's internal API - no authentication required.
+
+## Requirements
+
+- Node.js 18+ (uses native `fetch`)
 
 ## Limitations
 
@@ -99,10 +108,15 @@ This approach uses YouTube's internal API that serves the web/mobile clients, by
 - Age-restricted videos may not work without authentication
 - YouTube may change their internal API at any time
 
+## Python Version
+
+A Python version is also available in `youtube_transcript.py`:
+
+```bash
+pip install requests
+./youtube_transcript.py VIDEO_ID
+```
+
 ## License
 
 MIT
-
-## Credits
-
-Inspired by [youtube-transcript-api](https://github.com/jdepoix/youtube-transcript-api) Python library.
